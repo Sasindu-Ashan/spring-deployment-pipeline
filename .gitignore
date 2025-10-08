@@ -1,0 +1,17 @@
+# Backend build files
+/backend/build/
+/backend/target/
+
+# Frontend node modules and build
+/frontend/node_modules/
+/frontend/build/
+
+# IDE and system files
+.vscode/
+.idea/
+*.log
+*.class
+
+# Docker junk
+*.pid
+*.env
