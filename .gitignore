@@ -1,17 +1,21 @@
-# Backend build files
-/backend/build/
+# Backend (Maven)
 /backend/target/
+/backend/*.jar
 
-# Frontend node modules and build
-/frontend/node_modules/
-/frontend/build/
+# Frontend (Node)
+ /frontend/node_modules/
+ /frontend/.next/
+ /frontend/build/
 
-# IDE and system files
+# IDE / OS
 .vscode/
 .idea/
 *.log
 *.class
+*.iml
+.DS_Store
 
-# Docker junk
+# Docker / env
+.env
 *.pid
-*.env
+
