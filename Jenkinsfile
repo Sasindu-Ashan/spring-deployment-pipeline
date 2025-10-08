@@ -12,10 +12,11 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
+        stage('Build Backend (Maven)') {
             steps {
                 dir('backend') {
-                    bat 'gradlew clean build -x test'
+                    // Use mvn (make sure Maven is installed or configure Maven in Jenkins)
+                    bat 'mvn -B clean package -DskipTests'
                 }
             }
         }
@@ -23,7 +24,7 @@ pipeline {
         stage('Build Frontend') {
             steps {
                 dir('frontend') {
-                    bat 'npm install'
+                    bat 'npm ci'
                     bat 'npm run build'
                 }
             }
@@ -31,23 +32,28 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml build"
+                // run from repo root
+                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml build --parallel"
             }
         }
 
-        stage('Deploy Containers') {
+        stage('Deploy (docker-compose)') {
             steps {
-                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml up -d"
+                // stop & remove previous containers/volumes to avoid port conflicts
+                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml down --remove-orphans -v"
+                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml up -d --build"
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                bat "docker ps"
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Deployment Successful!'
-        }
-        failure {
-            echo '❌ Deployment Failed!'
-        }
+        success { echo '✅ Deployment pipeline succeeded.' }
+        failure { echo '❌ Pipeline failed — check console output.' }
     }
 }
