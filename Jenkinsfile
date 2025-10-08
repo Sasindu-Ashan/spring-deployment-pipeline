@@ -2,22 +2,20 @@ pipeline {
     agent any
 
     environment {
-        BACKEND_IMAGE = "deployment-backend"
-        FRONTEND_IMAGE = "deployment-frontend"
+        DOCKER_COMPOSE_PATH = "E:\\springapplication\\deployment"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/yourrepo.git'
+                git branch: 'main', url: 'https://github.com/Sasindu-Ashan/spring-deployment-pipeline.git'
             }
         }
 
         stage('Build Backend') {
             steps {
                 dir('backend') {
-                    bat 'gradlew.bat clean build -x test'  // Use mvnw.bat if Maven
-                    bat "docker build -t %BACKEND_IMAGE% ."
+                    bat 'gradlew clean build -x test'
                 }
             }
         }
@@ -27,31 +25,29 @@ pipeline {
                 dir('frontend') {
                     bat 'npm install'
                     bat 'npm run build'
-                    bat "docker build -t %FRONTEND_IMAGE% ."
                 }
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Build Docker Images') {
             steps {
-                bat "docker-compose down"
-                bat "docker-compose up -d --build"
+                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml build"
             }
         }
 
-        stage('Verify Containers') {
+        stage('Deploy Containers') {
             steps {
-                bat "docker ps"
+                bat "docker-compose -f ${DOCKER_COMPOSE_PATH}\\docker-compose.yml up -d"
             }
         }
     }
 
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo '✅ Deployment Successful!'
         }
         failure {
-            echo "Pipeline failed! Check the console logs."
+            echo '❌ Deployment Failed!'
         }
     }
 }
